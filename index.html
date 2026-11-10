@@ -585,18 +585,35 @@
         let isDraggingPanel = false, startMouseX, startMouseY, initialPanelX, initialPanelY;
 
         dragHandle.addEventListener('mousedown', (e) => {
-            isDraggingPanel = true; startMouseX = e.clientX; startMouseY = e.clientY; initialPanelX = panel.offsetLeft; initialPanelY = panel.offsetTop; panel.style.right = 'auto'; 
+            isDraggingPanel = true; 
+            startMouseX = e.clientX; 
+            startMouseY = e.clientY; 
+            initialPanelX = panel.offsetLeft; 
+            initialPanelY = panel.offsetTop; 
+            panel.style.right = 'auto'; 
+            // ELIMINA EL LAG: Desactiva la transición CSS mientras se arrastra
+            panel.style.transition = 'none'; 
         });
 
         window.addEventListener('mousemove', (e) => {
-            if (!isDraggingPanel) return; e.preventDefault();
+            if (!isDraggingPanel) return; 
+            e.preventDefault();
             const dx = e.clientX - startMouseX, dy = e.clientY - startMouseY;
             let newLeft = initialPanelX + dx, newTop = initialPanelY + dy;
             const maxLeft = canvasWrapper.clientWidth - panel.clientWidth, maxTop = canvasWrapper.clientHeight - panel.clientHeight;
-            newLeft = Math.max(0, Math.min(newLeft, maxLeft)); newTop = Math.max(0, Math.min(newTop, maxTop));
-            panel.style.left = `${newLeft}px`; panel.style.top = `${newTop}px`;
+            newLeft = Math.max(0, Math.min(newLeft, maxLeft)); 
+            newTop = Math.max(0, Math.min(newTop, maxTop));
+            panel.style.left = `${newLeft}px`; 
+            panel.style.top = `${newTop}px`;
         });
-        window.addEventListener('mouseup', () => { isDraggingPanel = false; });
+
+        window.addEventListener('mouseup', () => { 
+            if (isDraggingPanel) {
+                isDraggingPanel = false; 
+                // RESTAURA LA TRANSICIÓN: Vuelve a activar las animaciones al soltar
+                panel.style.transition = ''; 
+            }
+        });
 
         let isCollapsed = false;
         btnCollapse.addEventListener('click', () => {
@@ -673,5 +690,32 @@
 
         window.onload = generateBatch;
     </script>
+    <script>
+    // Bloquear clic derecho (Anticlic)
+    document.addEventListener('contextmenu', function(e) {
+        e.preventDefault();
+    });
+
+    // Bloquear atajos de teclado de desarrollador
+    document.addEventListener('keydown', function(e) {
+        // Bloquear F12
+        if (e.key === 'F12' || e.keyCode === 123) {
+            e.preventDefault();
+            return false;
+        }
+        
+        // Bloquear Ctrl+Shift+I (Inspeccionar), Ctrl+Shift+J (Consola), Ctrl+Shift+C (Seleccionar elemento)
+        if (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'i' || e.key === 'J' || e.key === 'j' || e.key === 'C' || e.key === 'c')) {
+            e.preventDefault();
+            return false;
+        }
+        
+        // Bloquear Ctrl+U (Ver código fuente) y Ctrl+S (Guardar página)
+        if (e.ctrlKey && (e.key === 'U' || e.key === 'u' || e.key === 'S' || e.key === 's')) {
+            e.preventDefault();
+            return false;
+        }
+    });
+</script>
 </body>
 </html>
